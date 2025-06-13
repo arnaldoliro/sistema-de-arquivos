@@ -1,13 +1,11 @@
-import AllFiles from "@/components/FilesAll";
-import PinnedFiles from "@/components/FilesPinned";
+import SectionFiles from "@/components/FilesSection";
 import SearchBar from "@/components/SearchSection";
 
 export default function Home() {
   return (
       <div>
         <SearchBar />
-        <PinnedFiles />
-        <AllFiles />
+        <SectionFiles />
       </div>
   )
 }
