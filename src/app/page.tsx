@@ -1,7 +1,13 @@
-import SearchBar from "@/components/SearchBar";
+import AllFiles from "@/components/FilesAll";
+import PinnedFiles from "@/components/FilesPinned";
+import SearchBar from "@/components/SearchSection";
 
 export default function Home() {
   return (
-      <SearchBar />
+      <div>
+        <SearchBar />
+        <PinnedFiles />
+        <AllFiles />
+      </div>
   )
 }

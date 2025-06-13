@@ -13,6 +13,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
+      <head>
+        <link  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+      </head>
       <body className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <header className="bg-white shadow-md">
           <Header />
