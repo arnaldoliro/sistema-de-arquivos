@@ -13,11 +13,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-br">
-      <body>
+      <body className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
         <header className="bg-white shadow-md">
           <Header />
         </header>
-        <main>
+        <main className="container mx-auto px-4 py-8">
           {children}
         </main>
         <footer>
