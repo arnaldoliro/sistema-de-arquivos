@@ -1,14 +1,27 @@
 "use client"
 import { useModal } from "@/context/ModalContext"
+import { useEffect, useState } from "react"
 
 export default function Modal() {
     const { isOpen, closeModal } = useModal()
+    const [show, setShow] = useState(false)
 
-    if (!isOpen) return null
+    useEffect(() => {
+     if (isOpen) {
+      setShow(true)
+     } else {
+    
+      const timeout = setTimeout(() => setShow(false), 200)
+      return () => clearTimeout(timeout)
+     }
+    }, [isOpen])
+
+
+    if (!isOpen && !show) return null
 
     return (
-        <div className="fixed inset-0 bg-[#00000079] items-center flex justify-center z-50">
-        <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+        <div className={`fixed inset-0 bg-[#00000079] items-center flex justify-center z-50 tion-opacity duration-500 ${isOpen ? "bg-black/50 opacity-100" : "opacity-0 pointer-events-none"}`}>
+        <div className={`bg-white rounded-lg shadow-xl w-full max-w-md p-6  transform transition-all duration-500 ${isOpen ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-4"}`}>
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold text-gray-800">Enviar Novo Arquivo</h3>
                 <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 cursor-pointer">
