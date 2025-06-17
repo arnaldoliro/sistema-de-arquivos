@@ -1,10 +1,36 @@
 "use client"
-import { useState} from "react"
+import { useEffect, useState} from "react"
 import FilesCard from "../FilesCard"
 import filesMock from "@/data/filesmock"
+import { getFiles } from "@/utils/api"
 
 export default function SectionFiles() {
-  const [files, setFiles] = useState(filesMock)
+  const [files, setFiles] = useState<any[]>([])
+  const [error, setError] = useState("")
+
+  useEffect(() => {
+    const fetchFiles = async () => {
+      try {
+        const data = await getFiles()
+        // Formatar os dados conforme necessário
+        const formatted = data.map((file: any) => ({
+          id: file.id,
+          title: file.nome,
+          description: file.descricao,
+          category: file.categoria,
+          date: new Date(file.criadoEm).toLocaleDateString("pt-BR"),
+          tags: [file.lotacao],
+          type: "pdf", // ou outra lógica para determinar tipo
+          isPinned: false,
+        }))
+        setFiles(formatted)
+      } catch (err: any) {
+        setError(err.message)
+      }
+    }
+
+    fetchFiles()
+  }, [])
 
   const handleTogglePin = (id: number) => {
     setFiles(prev =>
