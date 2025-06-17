@@ -1,11 +1,46 @@
 "use client"
 import { useModal } from "@/context/ModalContext"
 import { useEffect, useState } from "react"
+import { uploadFile } from "@/utils/api"
 
 export default function Modal() {
     const { isOpen, closeModal } = useModal()
     const [show, setShow] = useState(false)
+    // Captura dos dados
+    const [nome, setNome] = useState('')
+    const [descricao, setDescricao] = useState('')
+    const [categoria, setCategoria] = useState('documento')
+    const [lotacao, setLotacao] = useState('')
+    const [arquivo, setArquivo] = useState<File | null>(null)
+    const [mensagem, setMensagem] = useState('')
 
+    // Função para pegar e enviar os dados do formulário
+    const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!arquivo) {
+      setMensagem('Selecione um arquivo.')
+      return
+    }
+
+    const fileBuffer = await arquivo.arrayBuffer()
+    const base64 = Buffer.from(fileBuffer).toString('base64')
+
+    try {
+      await uploadFile({
+        nome,
+        descricao,
+        categoria,
+        lotacao,
+        conteudo: base64,
+      })
+      setMensagem('Arquivo enviado com sucesso!')
+    } catch (err: any) {
+      setMensagem(`Erro: ${err.message}`)
+    }
+  }
+
+    // Função para abrir, fechar e animar o form
     useEffect(() => {
      if (isOpen) {
       setShow(true)
@@ -28,34 +63,34 @@ export default function Modal() {
                     <i className="fas fa-times"></i>
                 </button>
             </div>
-            <form className="space-y-4">
+            <form className="space-y-4" onSubmit={handleSubmit}>
                 <div>                   
                     <label className="block text-gray-700 mb-2">Nome do Arquivo</label>
-                    <input type="text" required className="duration-300 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input value={nome} onChange={e => setNome(e.target.value)} type="text" required className="duration-300 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div>
                     <label className="block text-gray-700 mb-2">Descrição</label>
-                    <textarea className="duration-300 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                    <textarea value={descricao} onChange={e => setDescricao(e.target.value)} className="duration-300 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
                 </div>
                 <div>
                     <label className="block text-gray-700 mb-2">Categoria</label>
-                    <select required className="duration-300 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select value={categoria} onChange={e => setCategoria(e.target.value)} required className="duration-300 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Selecione uma categoria</option>
-                        <option value="Documentos">Documentos</option>
-                        <option value="Imagens">Imagens</option>
-                        <option value="Planilhas">Planilhas</option>
-                        <option value="Apresentações">Apresentações</option>
-                        <option value="Outros">Outros</option>
+                        <option value="documento">Documentos</option>
+                        <option value="imagem">Imagens</option>
+                        <option value="planilha">Planilhas</option>
+                        <option value="apresentacao">Apresentações</option>
+                        <option value="outros">Outros</option>
                     </select>
                 </div>
                 <div>
                     <label className="block text-gray-700 mb-2" >Lotação</label>
-                    <input type="text" required className="duration-300 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    <input value={lotacao} onChange={e => setLotacao(e.target.value)} type="text" required className="duration-300 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
                 </div>
                 <div>
                     <label className="block text-gray-700 mb-2">Arquivo</label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                        <input type="file"  className="hidden" />
+                        <input type="file" onChange={e => setArquivo(e.target.files?.[0] || null)} className="hidden" />
                         <label className="cursor-pointer">
                             <i className="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
                             <p className="text-gray-700">Clique para selecionar ou arraste um arquivo</p>
