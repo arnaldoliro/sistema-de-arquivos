@@ -10,7 +10,7 @@ export default function Modal() {
     // Captura dos dados
     const [nome, setNome] = useState('')
     const [descricao, setDescricao] = useState('')
-    const [categoria, setCategoria] = useState('documento')
+    const [categoria, setCategoria] = useState('Documento')
     const [lotacao, setLotacao] = useState('')
     const [arquivo, setArquivo] = useState<File | null>(null)
     const [mensagem, setMensagem] = useState('')
@@ -19,7 +19,7 @@ export default function Modal() {
     const resetForm = () => {
       setNome('')
       setDescricao('')
-      setCategoria('documento')
+      setCategoria('Documento')
       setLotacao('')
       setArquivo(null)
       setMensagem('')
@@ -89,11 +89,11 @@ export default function Modal() {
                     <label className="block text-gray-700 mb-2">Categoria</label>
                     <select value={categoria} onChange={e => setCategoria(e.target.value)} required className="duration-300 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Selecione uma categoria</option>
-                        <option value="documento">Documentos</option>
-                        <option value="imagem">Imagens</option>
-                        <option value="planilha">Planilhas</option>
-                        <option value="apresentacao">Apresentações</option>
-                        <option value="outros">Outros</option>
+                        <option value="Documento">Documentos</option>
+                        <option value="Imagem">Imagens</option>
+                        <option value="Planilha">Planilhas</option>
+                        <option value="Apresentação">Apresentações</option>
+                        <option value="Outros">Outros</option>
                     </select>
                 </div>
                 <div>

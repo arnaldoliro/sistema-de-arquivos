@@ -1,19 +1,67 @@
-import SearchInput from "../SearchInput";
-import SearchSelect from "../SearchSelect";
+"use client"
+import SearchInput from "../SearchInput"
+import SearchSelect from "../SearchSelect"
+import { useState, useEffect } from "react"
+import Filters from "@/types/filters"
 
-export default async function SearchBar() {
-    return(
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-grow">
-                        <SearchInput />
-                    </div>
-                    <div className="flex gap-4">
-                        <SearchSelect />
-                        <input type="date" id="dateFilter" className="border border-gray-300 rounded-2xl px-4 py-2 duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer" />
-                        <button id="clearFilters" className="text-blue-600 hover:text-blue-800 font-medium cursor-pointer">Limpar filtros</button>
-                    </div>
-                </div>
-            </div>
-    )
+type SearchBarProps = {
+  onSearch: (filters: Filters) => void
+}
+
+export default function SearchBar({ onSearch }: SearchBarProps) {
+  const [search, setSearch] = useState("")
+  const [category, setCategory] = useState("Todas as categorias")
+  const [date, setDate] = useState("")
+
+  // toda vez que algum filtro mudar, dispara a busca automaticamente
+  useEffect(() => {
+    onSearch({
+      search: search.trim() || undefined,
+      category: category !== "Todas as categorias" ? category : undefined,
+      date: date || undefined,
+    })
+  }, [search, category, date])
+
+  const clearFilters = () => {
+    setSearch("")
+    setCategory("Todas as categorias")
+    setDate("")
+    onSearch({})
+  }
+
+
+  return (
+    <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-grow">
+          <SearchInput
+              value={search}
+              onChange={setSearch} // isso só atualiza o input visualmente
+              onDebouncedSearch={(query) => {
+                onSearch({
+                  search: query.trim() || undefined,
+                  category: category !== "Todas as categorias" ? category : undefined,
+                  date: date || undefined,
+                })
+              }}
+          />
+        </div>
+        <div className="flex gap-4 items-center">
+          <SearchSelect selected={category} onSelect={setCategory} />
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="border border-gray-300 rounded-2xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={clearFilters}
+            className="text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+          >
+            Limpar filtros
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
