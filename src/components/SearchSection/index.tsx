@@ -13,37 +13,29 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   const [category, setCategory] = useState("Todas as categorias")
   const [date, setDate] = useState("")
 
-  // toda vez que algum filtro mudar, dispara a busca automaticamente
+  // Chamar onSearch só quando algum filtro mudar
   useEffect(() => {
     onSearch({
       search: search.trim() || undefined,
       category: category !== "Todas as categorias" ? category : undefined,
       date: date || undefined,
     })
-  }, [search, category, date])
+  }, [search, category, date, onSearch])
 
   const clearFilters = () => {
     setSearch("")
     setCategory("Todas as categorias")
     setDate("")
-    onSearch({})
   }
-
 
   return (
     <div className="bg-white rounded-xl shadow-md p-4 mb-6">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-grow">
           <SearchInput
-              value={search}
-              onChange={setSearch} // isso só atualiza o input visualmente
-              onDebouncedSearch={(query) => {
-                onSearch({
-                  search: query.trim() || undefined,
-                  category: category !== "Todas as categorias" ? category : undefined,
-                  date: date || undefined,
-                })
-              }}
+            value={search}
+            onChange={setSearch}  // atualiza o estado aqui
+            onDebouncedSearch={setSearch}  // passa o valor debounced pra setSearch (atualiza estado)
           />
         </div>
         <div className="flex gap-4 items-center">
