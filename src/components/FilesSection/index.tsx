@@ -12,6 +12,7 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
     const fetchFiles = async () => {
       try {
         console.log("[SectionFiles] Chamando getFiles com:", filters)
+        console.log("[SectionFiles] Filtros enviados:", JSON.stringify(filters, null, 2))
         const data = await getFiles(filters)
         console.log("[SectionFiles] Arquivos recebidos:", data)
 
@@ -27,7 +28,8 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
         }))
         setFiles(formatted)
       } catch (err: any) {
-        setError(err.message)
+          console.error("[SectionFiles] Erro ao buscar arquivos:", err)
+          setError(err.message || "Erro desconhecido")
       }
     }
 
@@ -46,7 +48,13 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
   const unpinnedFiles = files.filter(file => !file.isPinned)
 
   return (
+    
     <div>
+      {error && (
+        <div className="mb-4 p-4 rounded-xl bg-red-100 text-red-700 font-medium shadow">
+          Erro ao buscar arquivos: {error}
+        </div>
+      )}
       {pinnedFiles.length > 0 && (
         <div className="mb-8">
           <h1 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
