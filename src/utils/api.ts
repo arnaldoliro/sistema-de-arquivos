@@ -23,7 +23,7 @@ export async function uploadFile(payload: {
   return await response.json()
 }
 
-export async function getFiles(filters: Filters, page = 1, limit = 10) {
+export async function getFiles(filters: Filters & { page: number; limit?: number}) {
   const url = new URL("http://localhost:3000/files")
 
   if (filters.search?.trim()) {
@@ -37,9 +37,11 @@ export async function getFiles(filters: Filters, page = 1, limit = 10) {
   if (filters.date && !isNaN(Date.parse(filters.date))) {
     url.searchParams.append("date", filters.date)
   }
-
-  url.searchParams.append("page", page.toString())
-  url.searchParams.append("limit", limit.toString())
+    if (filters.page) {
+    url.searchParams.append("page", filters.page.toString())
+  }
+  
+  url.searchParams.append("limit", (filters.limit || 10).toString())
 
   console.log("[getFiles] URL final:", url.toString())
 

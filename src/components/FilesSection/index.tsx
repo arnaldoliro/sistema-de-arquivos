@@ -3,109 +3,148 @@ import { useEffect, useRef, useState } from "react"
 import FilesCard from "../FilesCard"
 import { getFiles } from "@/utils/api"
 import Filters from "@/types/filters"
+import Spinner from "../Spinner"
+import FileItem from "@/types/files"
 
 export default function SectionFiles({ filters }: { filters: Filters }) {
-  const [files, setFiles] = useState<any[]>([])
+  const [files, setFiles] = useState<FileItem[]>([])
+  const [error, setError] = useState("")
   const [page, setPage] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
-  const observerRef = useRef<HTMLDivElement | null>(null)
 
+  const observerRef = useRef(null)
+  const initialLoadRef = useRef(true)
+
+  // Resetar quando os filtros mudam
   useEffect(() => {
-    setFiles([])
     setPage(1)
+    setFiles([])
     setHasMore(true)
+    initialLoadRef.current = true
   }, [filters])
 
-  useEffect(() => {
-    const fetchFiles = async () => {
-      if (!hasMore) return
+ useEffect(() => {
+  if (!hasMore) return
 
-      setIsLoading(true)
-      try {
-        const data = await getFiles(filters, page, 10)
-        const formatted = data.map((file: any) => ({
-          id: file.id,
-          title: file.nome,
-          description: file.descricao,
-          category: file.categoria,
-          date: new Date(file.criadoEm).toLocaleDateString("pt-BR"),
-          tags: [file.lotacao],
-          type: "pdf",
-          isPinned: false,
-        }))
-        setFiles(prev => [...prev, ...formatted])
-        if (data.length < 10) setHasMore(false)
-      } catch (err) {
-        console.error("[SectionFiles] Erro ao buscar arquivos:", err)
-      } finally {
-        setIsLoading(false)
-      }
+  const fetchFiles = async () => {
+    setIsLoading(true)
+    const startTime = Date.now()
+
+    try {
+      const data = await getFiles({ ...filters, page })
+
+      const formatted: FileItem[] = data.map((file: any) => ({
+        id: file.id,
+        title: file.nome,
+        description: file.descricao,
+        category: file.categoria,
+        date: new Date(file.criadoEm).toLocaleDateString("pt-BR"),
+        tags: [file.lotacao],
+        type: "pdf",
+        isPinned: false,
+      }))
+
+      setFiles((prev) => {
+        if (initialLoadRef.current) {
+          initialLoadRef.current = false
+          return formatted
+        }
+        // Evitar duplicatas
+        const uniqueNew = formatted.filter(
+          (newFile) => !prev.some((prevFile) => prevFile.id === newFile.id)
+        )
+        return [...prev, ...uniqueNew]
+      })
+
+      setHasMore(data.length === 10)
+    } catch (err: any) {
+      console.error("[SectionFiles] Erro ao buscar arquivos:", err)
+      setError(err.message || "Erro desconhecido")
     }
 
-    fetchFiles()
-  }, [page, filters])
+    // Garante que o loading dura no mínimo 1 segundo
+    const elapsed = Date.now() - startTime
+    const MIN_LOADING_TIME = 2000
+    if (elapsed < MIN_LOADING_TIME) {
+      await new Promise((res) => setTimeout(res, MIN_LOADING_TIME - elapsed))
+    }
+    setIsLoading(false)
+  }
 
+  fetchFiles()
+}, [filters, page])
+
+
+  // Observador para scroll infinito
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          setPage(prev => prev + 1)
-        }
-      },
-      { threshold: 1.0 }
-    )
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && hasMore && !isLoading) {
+        setPage((prev) => prev + 1)
+      }
+    })
 
-    const el = observerRef.current
-    if (el) observer.observe(el)
+    if (observerRef.current) observer.observe(observerRef.current)
 
     return () => {
-      if (el) observer.unobserve(el)
+      if (observerRef.current) observer.unobserve(observerRef.current)
     }
   }, [hasMore, isLoading])
 
   const handleTogglePin = (id: number) => {
-    setFiles(prev =>
-      prev.map(file =>
+    setFiles((prev) =>
+      prev.map((file) =>
         file.id === id ? { ...file, isPinned: !file.isPinned } : file
       )
     )
   }
 
-  const pinnedFiles = files.filter(file => file.isPinned)
-  const unpinnedFiles = files.filter(file => !file.isPinned)
+  const pinnedFiles = files.filter((file) => file.isPinned)
+  const unpinnedFiles = files.filter((file) => !file.isPinned)
 
   return (
     <div>
+      {error && (
+        <div className="mb-4 p-4 rounded-xl bg-red-100 text-red-700 font-medium shadow">
+          Erro ao buscar arquivos: {error}
+        </div>
+      )}
+
       {pinnedFiles.length > 0 && (
         <div className="mb-8">
           <h1 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
             <i className="fas fa-thumbtack text-blue-600 mr-2"></i> Arquivos Fixados
           </h1>
           <div className="grid grid-cols-1 gap-4">
-            {pinnedFiles.map(file => (
-              <FilesCard key={file.id} file={file} onTogglePin={() => handleTogglePin(file.id)} />
+            {pinnedFiles.map((file, index) => (
+              <FilesCard
+                key={`${file.id}-${index}`}
+                file={file}
+                onTogglePin={() => handleTogglePin(file.id)}
+              />
             ))}
           </div>
         </div>
       )}
 
-      <div>
+      <div className="mb-5">
         <h1 className="text-xl font-semibold text-gray-800 mb-4">Todos os Arquivos</h1>
         <div className="grid grid-cols-1 gap-4">
-          {unpinnedFiles.map(file => (
-            <FilesCard key={file.id} file={file} onTogglePin={() => handleTogglePin(file.id)} />
+          {unpinnedFiles.map((file, index) => (
+            <FilesCard
+              key={`${file.id}-${index}`}
+              file={file}
+              onTogglePin={() => handleTogglePin(file.id)}
+            />
           ))}
         </div>
-
-        {isLoading && (
-          <div className="flex justify-center py-4">
-            <div className="w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
-
-        <div ref={observerRef} className="h-1" />
       </div>
+
+      {/* Mostra o spinner sempre que isLoading for true, seja no primeiro load ou em scroll */}
+      {isLoading && <Spinner />}
+
+
+      <div ref={observerRef} className="h-1" />
     </div>
   )
 }
