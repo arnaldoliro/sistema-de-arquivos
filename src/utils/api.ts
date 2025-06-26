@@ -1,3 +1,5 @@
+import Filters from "@/types/filters"
+
 export async function uploadFile(payload: {
   nome: string
   descricao: string
@@ -21,11 +23,7 @@ export async function uploadFile(payload: {
   return await response.json()
 }
 
-export async function getFiles(filters: {
-  search?: string
-  category?: string
-  date?: string
-}) {
+export async function getFiles(filters: Filters, page = 1, limit = 10) {
   const url = new URL("http://localhost:3000/files")
 
   if (filters.search?.trim()) {
@@ -40,21 +38,17 @@ export async function getFiles(filters: {
     url.searchParams.append("date", filters.date)
   }
 
+  url.searchParams.append("page", page.toString())
+  url.searchParams.append("limit", limit.toString())
+
   console.log("[getFiles] URL final:", url.toString())
 
   try {
     const res = await fetch(url.toString())
-    if (!res.ok) {
-      console.error("[getFiles] Erro HTTP:", res.status)
-      throw new Error("Erro ao buscar arquivos")
-    }
-    const data = await res.json()
-    return data
+    if (!res.ok) throw new Error("Erro ao buscar arquivos")
+    return await res.json()
   } catch (err) {
     console.error("[getFiles] Erro ao buscar arquivos:", err)
     throw err
   }
 }
-
-
-

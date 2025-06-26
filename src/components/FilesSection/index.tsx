@@ -1,21 +1,29 @@
 "use client"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import FilesCard from "../FilesCard"
 import { getFiles } from "@/utils/api"
 import Filters from "@/types/filters"
 
 export default function SectionFiles({ filters }: { filters: Filters }) {
   const [files, setFiles] = useState<any[]>([])
-  const [error, setError] = useState("")
+  const [page, setPage] = useState(1)
+  const [isLoading, setIsLoading] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const observerRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    setFiles([])
+    setPage(1)
+    setHasMore(true)
+  }, [filters])
 
   useEffect(() => {
     const fetchFiles = async () => {
-      try {
-        console.log("[SectionFiles] Chamando getFiles com:", filters)
-        console.log("[SectionFiles] Filtros enviados:", JSON.stringify(filters, null, 2))
-        const data = await getFiles(filters)
-        console.log("[SectionFiles] Arquivos recebidos:", data)
+      if (!hasMore) return
 
+      setIsLoading(true)
+      try {
+        const data = await getFiles(filters, page, 10)
         const formatted = data.map((file: any) => ({
           id: file.id,
           title: file.nome,
@@ -26,15 +34,35 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
           type: "pdf",
           isPinned: false,
         }))
-        setFiles(formatted)
-      } catch (err: any) {
-          console.error("[SectionFiles] Erro ao buscar arquivos:", err)
-          setError(err.message || "Erro desconhecido")
+        setFiles(prev => [...prev, ...formatted])
+        if (data.length < 10) setHasMore(false)
+      } catch (err) {
+        console.error("[SectionFiles] Erro ao buscar arquivos:", err)
+      } finally {
+        setIsLoading(false)
       }
     }
 
     fetchFiles()
-  }, [filters])
+  }, [page, filters])
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !isLoading) {
+          setPage(prev => prev + 1)
+        }
+      },
+      { threshold: 1.0 }
+    )
+
+    const el = observerRef.current
+    if (el) observer.observe(el)
+
+    return () => {
+      if (el) observer.unobserve(el)
+    }
+  }, [hasMore, isLoading])
 
   const handleTogglePin = (id: number) => {
     setFiles(prev =>
@@ -48,13 +76,7 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
   const unpinnedFiles = files.filter(file => !file.isPinned)
 
   return (
-    
     <div>
-      {error && (
-        <div className="mb-4 p-4 rounded-xl bg-red-100 text-red-700 font-medium shadow">
-          Erro ao buscar arquivos: {error}
-        </div>
-      )}
       {pinnedFiles.length > 0 && (
         <div className="mb-8">
           <h1 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
@@ -75,6 +97,14 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
             <FilesCard key={file.id} file={file} onTogglePin={() => handleTogglePin(file.id)} />
           ))}
         </div>
+
+        {isLoading && (
+          <div className="flex justify-center py-4">
+            <div className="w-8 h-8 border-4 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        )}
+
+        <div ref={observerRef} className="h-1" />
       </div>
     </div>
   )
