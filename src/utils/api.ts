@@ -54,3 +54,33 @@ export async function getFiles(filters: Filters & { page: number; limit?: number
     throw err
   }
 }
+
+export async function downloadArquivo(id: number): Promise<void> {
+  try {
+    const response = await fetch(`http://localhost:3000/files/${id}/download`);
+
+    if (!response.ok) {
+      throw new Error('Erro ao baixar o arquivo');
+    }
+
+    const blob = await response.blob();
+
+    const filename =
+      response.headers
+        .get('Content-Disposition')
+        ?.split('filename=')[1]
+        ?.replace(/"/g, '') || `arquivo-${id}.bin`;
+
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('Erro ao baixar arquivo:', error);
+  }
+}
+

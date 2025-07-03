@@ -1,13 +1,18 @@
 "use client"
 import Dropdown from "../FilesDropdown"
+import { downloadArquivo } from '@/utils/api'; // ajuste o path conforme necessário
 
 export default function FilesCard({ file, onTogglePin }: any) {
+    const handleDownload = () => {
+    downloadArquivo(file.id);
+  };
+
   return (
-    <div
-      className={`bg-white rounded-lg shadow-md p-4 relative transition-all ${
-        file.isPinned ? "border-l-4 border-blue-500" : ""
-      }`}
-    >
+     <div
+       className={`bg-white rounded-lg shadow-md p-4 relative transition-all duration-300 transform hover:scale-105 hover:shadow-lg ${
+         file.isPinned ? "border-l-4 border-blue-500" : ""
+       }`}
+     >
       <div className="flex justify-between">
         <div className="flex items-start">
           <div className="text-2xl text-blue-600 mr-4">
@@ -27,8 +32,9 @@ export default function FilesCard({ file, onTogglePin }: any) {
             </div>
           </div>
         </div>
-        <Dropdown isPinned={file.isPinned} onTogglePin={onTogglePin} />
+        <Dropdown isPinned={file.isPinned} onTogglePin={onTogglePin} onDownload={handleDownload} />
       </div>
     </div>
   )
 }
+
