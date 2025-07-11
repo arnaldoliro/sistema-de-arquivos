@@ -13,6 +13,8 @@ export default function Modal() {
     const [categoria, setCategoria] = useState('Documento')
     const [lotacao, setLotacao] = useState('')
     const [arquivo, setArquivo] = useState<File | null>(null)
+    const [originalFileName, setOriginalFileName] = useState('');
+    const [mimeType, setMimeType] = useState('');
     const [mensagem, setMensagem] = useState('')
     const [success, setSuccess] = useState(false)
     
@@ -26,7 +28,6 @@ export default function Modal() {
     }
 
 
-    // Função para pegar e enviar os dados do formulário
     const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -39,7 +40,7 @@ export default function Modal() {
     const base64 = Buffer.from(fileBuffer).toString('base64')
 
     try {
-      await uploadFile({ nome, descricao, categoria, lotacao, conteudo: base64 })
+      await uploadFile({ nome, descricao, categoria, lotacao, conteudo: base64, originalFileName, mimeType })
       setSuccess(true)
       setTimeout(() => {
         closeModal()
@@ -109,8 +110,11 @@ export default function Modal() {
                                 setArquivo(file);
 
                                 if (file) {
+                                  setOriginalFileName(file.name);
+                                  setMimeType(file.type)
                                   const arrayBuffer = await file.arrayBuffer();
                                   const base64 = Buffer.from(arrayBuffer).toString("base64");
+                                  console.log("Tipo de Arquivo", file.type)
                                   console.log("📂 Arquivo selecionado:", file.name);
                                   console.log("📦 Base64 gerado (cortado):", base64.slice(0, 100) + "...");
                                 }

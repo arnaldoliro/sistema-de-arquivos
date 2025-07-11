@@ -6,6 +6,8 @@ export async function uploadFile(payload: {
   categoria: string
   lotacao: string
   conteudo: string
+  originalFileName: string
+  mimeType: string
 }) {
   const response = await fetch('http://localhost:3000/upload', {
     method: 'POST',
@@ -57,28 +59,35 @@ export async function getFiles(filters: Filters & { page: number; limit?: number
 
 export async function downloadArquivo(id: number): Promise<void> {
   try {
-    const response = await fetch(`http://localhost:3000/files/:${id}/download`);
+    const response = await fetch(`http://localhost:3000/files/${id}/download`);
 
     if (!response.ok) {
       throw new Error('Erro ao baixar o arquivo');
     }
 
+    const disposition = response.headers.get('Content-Disposition');
+    let fileName = 'arquivo';
+
+    console.log('Headers:', [...response.headers.entries()]);
+
+    if (disposition && disposition.includes('filename=')) {
+      console.log('Entrando no IF')
+      fileName = disposition
+        .split('filename=')[1]
+        .replace(/"/g, '')
+        .trim();
+    }
+
+    console.log(fileName)
+
     const blob = await response.blob();
 
-    const filename =
-      response.headers
-        .get('Content-Disposition')
-        ?.split('filename=')[1]
-        ?.replace(/"/g, '') || `arquivo-${id}.bin`;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
 
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-
-    window.URL.revokeObjectURL(url);
+    URL.revokeObjectURL(link.href);
   } catch (error) {
     console.error('Erro ao baixar arquivo:', error);
   }
