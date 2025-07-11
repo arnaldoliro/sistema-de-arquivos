@@ -103,7 +103,19 @@ export default function Modal() {
                 <div>
                     <label className="block text-gray-700 mb-2">Arquivo</label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                        <input id="file-upload" type="file" onChange={e => setArquivo(e.target.files?.[0] || null)} className="hidden"/>
+                        <input id="file-upload" type="file" className="hidden"
+                            onChange={async (e) => {
+                                const file = e.target.files?.[0] || null;
+                                setArquivo(file);
+
+                                if (file) {
+                                  const arrayBuffer = await file.arrayBuffer();
+                                  const base64 = Buffer.from(arrayBuffer).toString("base64");
+                                  console.log("📂 Arquivo selecionado:", file.name);
+                                  console.log("📦 Base64 gerado (cortado):", base64.slice(0, 100) + "...");
+                                }
+                            }}
+                        />
                         <label htmlFor="file-upload" className="cursor-pointer">
                             <i className="fas fa-cloud-upload-alt text-4xl text-blue-500 mb-2"></i>
                             <p className="text-gray-700">Clique para selecionar ou arraste um arquivo</p>

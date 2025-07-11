@@ -57,7 +57,7 @@ export async function getFiles(filters: Filters & { page: number; limit?: number
 
 export async function downloadArquivo(id: number): Promise<void> {
   try {
-    const response = await fetch(`http://localhost:3000/files/${id}/download`);
+    const response = await fetch(`http://localhost:3000/files/:${id}/download`);
 
     if (!response.ok) {
       throw new Error('Erro ao baixar o arquivo');
