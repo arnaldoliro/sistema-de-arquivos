@@ -66,17 +66,18 @@ export async function downloadArquivo(id: number): Promise<void> {
       throw new Error('Erro ao baixar o arquivo');
     }
 
+
     const disposition = response.headers.get('Content-Disposition');
     let fileName = 'arquivo';
 
     console.log('Headers:', [...response.headers.entries()]);
 
-    if (disposition && disposition.includes('filename=')) {
-      console.log('Entrando no IF')
-      fileName = disposition
-        .split('filename=')[1]
-        .replace(/"/g, '')
-        .trim();
+    if (disposition) {
+      // Regex para extrair o nome do arquivo entre aspas ou sem aspas
+      const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/);
+      if (match) {
+        fileName = decodeURIComponent(match[1] || match[2]);
+      }
     }
 
     console.log(fileName)
