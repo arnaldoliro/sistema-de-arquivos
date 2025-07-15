@@ -1,15 +1,57 @@
 "use client"
+import { useEffect, useRef, useState } from "react";
 import Dropdown from "../FilesDropdown"
-import { downloadArquivo } from '@/utils/api'; // ajuste o path conforme necessário
+import { downloadArquivo } from '@/utils/api';
 
 export default function FilesCard({ file, onTogglePin }: any) {
-    const handleDownload = () => {
+  const [open, setOpen] = useState(false)
+  const [visible, setVisible] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)  
+  
+  const handleDownload = () => {
     downloadArquivo(file.id);
+    setOpen(false)
   };
 
+  const handleTogglePin = () => {
+    onTogglePin();
+    setOpen(false);
+  }
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if(ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+    }
+  }, [open])
+
+  useEffect(() => {
+  let timeout: NodeJS.Timeout;
+
+  if (open) {
+    setVisible(true);
+  } else {
+    timeout = setTimeout(() => {
+      setVisible(false);
+    }, 200);
+  }
+
+  return () => clearTimeout(timeout);
+}, [open]);
   return (
      <div
-       className={`bg-white rounded-lg shadow-md p-4 relative transition-all duration-300 transform hover:scale-105 hover:shadow-lg ${
+       ref={ref}
+       onClick={() => setOpen((prev) => !prev)}
+       className={`bg-white rounded-lg shadow-md p-4 relative transition-all duration-300 transform hover:scale-105 hover:shadow-lg cursor-pointer ${
          file.isPinned ? "border-l-4 border-blue-500" : ""
        }`}
      >
@@ -32,7 +74,21 @@ export default function FilesCard({ file, onTogglePin }: any) {
             </div>
           </div>
         </div>
-        <Dropdown isPinned={file.isPinned} onTogglePin={onTogglePin} onDownload={handleDownload} />
+        <div>
+          <button
+            className="text-gray-500 hover:bg-gray-300 w-6 rounded-full transition-all duration-300 hover:text-gray-700 cursor-pointer">
+            <i className="fas fa-ellipsis-v text-lg"></i>
+          </button>
+          {visible && (
+            <Dropdown
+              isPinned={file.isPinned}
+              onTogglePin={handleTogglePin}
+              onDownload={handleDownload}
+              open={open}
+              fileId={file.id}
+            />
+          )}
+        </div>
       </div>
     </div>
   )

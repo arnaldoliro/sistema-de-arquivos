@@ -6,6 +6,9 @@ export async function uploadFile(payload: {
   categoria: string
   lotacao: string
   conteudo: string
+  originalFileName: string
+  mimeType: string
+  isPinned: boolean
 }) {
   const response = await fetch('http://localhost:3000/upload', {
     method: 'POST',
@@ -63,24 +66,50 @@ export async function downloadArquivo(id: number): Promise<void> {
       throw new Error('Erro ao baixar o arquivo');
     }
 
+
+    const disposition = response.headers.get('Content-Disposition');
+    let fileName = 'arquivo';
+
+    console.log('Headers:', [...response.headers.entries()]);
+
+    if (disposition) {
+      // Regex para extrair o nome do arquivo entre aspas ou sem aspas
+      const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/);
+      if (match) {
+        fileName = decodeURIComponent(match[1] || match[2]);
+      }
+    }
+
+    console.log(fileName)
+
     const blob = await response.blob();
 
-    const filename =
-      response.headers
-        .get('Content-Disposition')
-        ?.split('filename=')[1]
-        ?.replace(/"/g, '') || `arquivo-${id}.bin`;
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
 
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
-
-    window.URL.revokeObjectURL(url);
+    URL.revokeObjectURL(link.href);
   } catch (error) {
     console.error('Erro ao baixar arquivo:', error);
   }
 }
+
+export async function fixFiles(id: number, isPinned: boolean) {
+  const response = await fetch(`http://localhost:3000/files/${id}/fix`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ isPinned }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Erro ao fixar');
+  }
+
+  return await response.json();
+}
+
 
