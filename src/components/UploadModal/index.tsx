@@ -15,6 +15,7 @@ export default function Modal() {
     const [arquivo, setArquivo] = useState<File | null>(null)
     const [originalFileName, setOriginalFileName] = useState('');
     const [mimeType, setMimeType] = useState('');
+    const [isPinned, setIsPinned] = useState(false)
     const [mensagem, setMensagem] = useState('')
     const [success, setSuccess] = useState(false)
     
@@ -40,7 +41,7 @@ export default function Modal() {
     const base64 = Buffer.from(fileBuffer).toString('base64')
 
     try {
-      await uploadFile({ nome, descricao, categoria, lotacao, conteudo: base64, originalFileName, mimeType })
+      await uploadFile({ nome, descricao, categoria, lotacao, conteudo: base64, originalFileName, mimeType, isPinned })
       setSuccess(true)
       setTimeout(() => {
         closeModal()
@@ -70,7 +71,7 @@ export default function Modal() {
         
         <div className={`fixed inset-0 bg-[#00000079] items-center flex justify-center z-50 tion-opacity duration-500 ${isOpen ? "bg-black/50 opacity-100" : "opacity-0 pointer-events-none"}`}>
          {!success && (
-          <div className={`bg-white rounded-lg shadow-xl w-full max-w-md p-6  transform transition-all duration-500 ${isOpen ? "scale-100 opacity-100 translate-y-0" : "scale-95 opacity-0 translate-y-4"}`}>
+          <div className={`bg-white rounded-lg shadow-xl w-full max-w-md p-6 transform transition-all duration-500 ${isOpen ? "scale-85 opacity-100 translate-y-0" : "scale-50 opacity-0 translate-y-4"}`}>
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold text-gray-800">Enviar Novo Arquivo</h3>
                 <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 cursor-pointer">
@@ -88,7 +89,7 @@ export default function Modal() {
                 </div>
                 <div>
                     <label className="block text-gray-700 mb-2">Categoria</label>
-                    <select value={categoria} onChange={e => setCategoria(e.target.value)} required className="duration-300 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <select value={categoria} onChange={e => setCategoria(e.target.value)} required className="cursor-pointer duration-300 w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Selecione uma categoria</option>
                         <option value="Documento">Documentos</option>
                         <option value="Imagem">Imagens</option>
@@ -132,6 +133,10 @@ export default function Modal() {
                             </div>
                         )}                        
                     </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <input className="cursor-pointer" type="checkbox" checked={isPinned} onChange={(e) => setIsPinned(e.target.checked)}/>
+                    <label>Fixar Arquivo</label>
                 </div>
                 <div className="flex justify-end">
                     <button type="button" onClick={closeModal} className="px-4 py-2 text-gray-700 font-medium mr-2 cursor-pointer">Cancelar</button>

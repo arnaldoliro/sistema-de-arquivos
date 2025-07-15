@@ -8,6 +8,7 @@ export async function uploadFile(payload: {
   conteudo: string
   originalFileName: string
   mimeType: string
+  isPinned: boolean
 }) {
   const response = await fetch('http://localhost:3000/upload', {
     method: 'POST',
@@ -92,4 +93,22 @@ export async function downloadArquivo(id: number): Promise<void> {
     console.error('Erro ao baixar arquivo:', error);
   }
 }
+
+export async function fixFiles(id: number, isPinned: boolean) {
+  const response = await fetch(`http://localhost:3000/files/${id}/fix`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ isPinned }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || 'Erro ao fixar');
+  }
+
+  return await response.json();
+}
+
 

@@ -79,7 +79,15 @@ export default function FilesCard({ file, onTogglePin }: any) {
             className="text-gray-500 hover:bg-gray-300 w-6 rounded-full transition-all duration-300 hover:text-gray-700 cursor-pointer">
             <i className="fas fa-ellipsis-v text-lg"></i>
           </button>
-          {visible && ( <Dropdown isPinned={file.isPinned} onTogglePin={handleTogglePin} onDownload={handleDownload} open={open}/>)}
+          {visible && (
+            <Dropdown
+              isPinned={file.isPinned}
+              onTogglePin={handleTogglePin}
+              onDownload={handleDownload}
+              open={open}
+              fileId={file.id}
+            />
+          )}
         </div>
       </div>
     </div>

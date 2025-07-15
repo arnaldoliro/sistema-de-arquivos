@@ -1,9 +1,26 @@
 "use client"
 import DropdownProps from "@/types/dropdown"
 import { motion, AnimatePresence } from 'framer-motion'
+import { fixFiles } from "@/utils/api"
+import { useState } from "react"
 
 
-export default function Dropdown({ isPinned, onTogglePin, onDownload, open }: DropdownProps) {
+export default function Dropdown({ isPinned, onTogglePin, onDownload, open, fileId }: DropdownProps & { fileId: number }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleTogglePin = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setLoading(true);
+    try {
+      await fixFiles(fileId, !isPinned);
+      onTogglePin();
+    } catch (err) {
+      // Pode adicionar um toast ou alerta de erro aqui
+      console.error("Erro ao fixar/desafixar", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -24,17 +41,17 @@ export default function Dropdown({ isPinned, onTogglePin, onDownload, open }: Dr
                 e.stopPropagation();
                 onDownload();
               }}
+              disabled={loading}
             >
               <i className="fas fa-download text-blue-600"></i> Baixar
             </button>
             <button
               className="w-full text-left px-4 py-2 hover:bg-gray-100 cursor-pointer flex rounded-b-lg items-center gap-2"
-              onClick={(e) => {
-                e.stopPropagation();
-                onTogglePin();
-              }}
+              onClick={handleTogglePin}
+              disabled={loading}
             >
               <i className="fas fa-thumbtack text-blue-600"></i> {isPinned ? "Desafixar" : "Fixar"}
+              {loading && <span className="ml-2 animate-spin">⏳</span>}
             </button>
           </div>
         </motion.div>
