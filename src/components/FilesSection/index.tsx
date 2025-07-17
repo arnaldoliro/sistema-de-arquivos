@@ -47,7 +47,6 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
         category: file.categoria,
         date: new Date(file.criadoEm).toLocaleDateString("pt-BR"),
         tags: [file.lotacao],
-        type: "pdf",
         isPinned: file.fixado ?? false,
       }))
 
