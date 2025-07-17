@@ -10,21 +10,27 @@ export async function uploadFile(payload: {
   mimeType: string
   isPinned: boolean
 }) {
-  const response = await fetch('http://localhost:3000/upload', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  })
+  try {
+    const response = await fetch('http://localhost:3000/upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    })
 
-  if (!response.ok) {
-    const errorData = await response.json()
-    throw new Error(errorData.message || 'Erro ao enviar arquivo')
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Erro ao enviar arquivo')
+    }
+
+    return await response.json()
+  } catch (error: unknown) {
+    console.error('Erro ao enviar arquivo:', error)
+    throw error
   }
-
-  return await response.json()
 }
+
 
 export async function getFiles(filters: Filters & { page: number; limit?: number}) {
   const url = new URL("http://localhost:3000/files")

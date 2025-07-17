@@ -2,11 +2,14 @@
 import { useModal } from "@/context/ModalContext"
 import { useEffect, useState } from "react"
 import { uploadFile } from "@/utils/api"
-import { motion } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
+import getAcceptByCategory from "@/utils/categoryModalFilter"
 
 export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => void }) {
     const { isOpen, closeModal } = useModal()
     const [show, setShow] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [error, setError] = useState(false)
     // Captura dos dados
     const [nome, setNome] = useState('')
     const [descricao, setDescricao] = useState('')
@@ -37,23 +40,36 @@ export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => voi
       return
     }
 
+    setLoading(true)
+    setMensagem('')
+    setError(false)
+
     const fileBuffer = await arquivo.arrayBuffer()
     const base64 = Buffer.from(fileBuffer).toString('base64')
 
     try {
       await uploadFile({ nome, descricao, categoria, lotacao, conteudo: base64, originalFileName, mimeType, isPinned })
+      setLoading(false)
       setSuccess(true)
       // Aguarda 800ms antes de atualizar a lista para garantir que o backend já processou
       setTimeout(() => {
         if (onUploadSuccess) onUploadSuccess();
-      }, 2000);
+      }, 500);
       setTimeout(() => {
         closeModal()
         setSuccess(false)
         resetForm()
-      }, 1000)
+      }, 2000)
     } catch (err: any) {
+        setLoading(false)
+        setError(true)
         setMensagem(`Erro: ${err.message}`)
+        
+        setTimeout(() => {
+            setError(false)
+            resetForm()
+        }, 3500)
+
     }
   }
 
@@ -70,6 +86,52 @@ export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => voi
 
 
     if (!isOpen && !show) return null
+
+    if (loading) {
+    return (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg shadow-lg text-center flex flex-col items-center gap-3">
+                <div className="loader border-4 border-blue-500 border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
+                <p className="text-gray-700">Enviando arquivo...</p>
+            </div>
+        </div>
+    )
+    }
+
+    if (error) {
+        return (
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+            >
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    className="bg-white rounded-lg shadow-xl p-6 text-center"
+                >
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 10 }}
+                        className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center mx-auto"
+                    >
+                        <i className="fas fa-times text-white text-2xl"></i>
+                    </motion.div>
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.2 }}
+                        className="mt-4 text-red-700 font-semibold"
+                    >
+                        {mensagem}
+                    </motion.p>
+                </motion.div>
+            </motion.div>
+        )
+    }
 
     return (
         
@@ -109,7 +171,7 @@ export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => voi
                 <div>
                     <label className="block text-gray-700 mb-2">Arquivo</label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                        <input id="file-upload" type="file" className="hidden"
+                        <input id="file-upload" type="file" className="hidden" accept={getAcceptByCategory(categoria)}
                             onChange={async (e) => {
                                 const file = e.target.files?.[0] || null;
                                 setArquivo(file);
@@ -139,11 +201,25 @@ export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => voi
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <input className="cursor-pointer" type="checkbox" checked={isPinned} onChange={(e) => setIsPinned(e.target.checked)}/>
-                    <label>Fixar Arquivo</label>
+                    <div className="relative">
+                        <input id="fixar-arquivo" type="checkbox" checked={isPinned} onChange={(e) => setIsPinned(e.target.checked)} className="mt-2 peer appearance-none w-4 h-4 border border-gray-400 rounded-md checked:bg-blue-600 transition duration-200 cursor-pointer"/>
+                        <AnimatePresence>
+                            {isPinned && (
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0 }}
+                                    className="absolute top-0 left-0 w-4 h-4 flex mt-2 text-center items-center justify-center pointer-events-none"
+                                >
+                                    <i className="fas fa-check text-white text-xs"></i>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                    <label htmlFor="fixar-arquivo" className="cursor-pointer text-gray-800">Fixar Arquivo</label>
                 </div>
                 <div className="flex justify-end">
-                    <button type="button" onClick={closeModal} className="px-4 py-2 text-gray-700 font-medium mr-2 cursor-pointer">Cancelar</button>
+                    <button type="button" onClick={() => {closeModal(); resetForm();}} className="px-4 py-2 text-gray-700 font-medium mr-2 cursor-pointer">Cancelar</button>
                     <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg cursor-pointer duration-300">Enviar</button>
                 </div>
             </form>
@@ -159,6 +235,12 @@ export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => voi
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
                         exit={{ scale: 0 }}
+                        transition={{
+                            duration: 0.8,
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 15
+                        }}
                         className="items-center text-center justify-center h-24"
                     >
                         <div className="w-16 h-16 rounded-full bg-green-500 flex items-center text-center mx-auto mt-3 justify-center">

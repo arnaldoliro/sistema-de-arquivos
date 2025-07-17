@@ -5,7 +5,6 @@ type FileItem = {
   tags: string[]
   category: string
   date: string
-  type: string
   isPinned: boolean
 }
 

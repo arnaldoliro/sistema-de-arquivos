@@ -58,7 +58,7 @@ export default function FilesCard({ file, onTogglePin }: any) {
       <div className="flex justify-between">
         <div className="flex items-start">
           <div className="text-2xl text-blue-600 mr-4">
-            <i className={`fas fa-file-${file.type === "pdf" ? "pdf" : "alt"}`}></i>
+            <i className={`fas ${file.category === 'Documento' ? 'fa-file-pdf' : file.category === 'Imagem' ? 'fa-file-image' : file.category === 'Planilha' ? 'fa-file-excel' : file.category === 'Apresentação' ? 'fa-file-powerpoint' : 'fa-file-alt'}`}></i>
           </div>
           <div>
             <h3 className="font-semibold text-gray-800">{file.title}</h3>
