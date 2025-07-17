@@ -40,8 +40,10 @@ export async function getFiles(filters: Filters & { page: number; limit?: number
   if (filters.date && !isNaN(Date.parse(filters.date))) {
     url.searchParams.append("date", filters.date)
   }
-    if (filters.page) {
-    url.searchParams.append("page", filters.page.toString())
+  
+  if (filters.page) {
+    const skip = (filters.page - 1) * (filters.limit || 10)
+    url.searchParams.append("skip", skip.toString())
   }
   
   url.searchParams.append("limit", (filters.limit || 10).toString())
@@ -73,7 +75,6 @@ export async function downloadArquivo(id: number): Promise<void> {
     console.log('Headers:', [...response.headers.entries()]);
 
     if (disposition) {
-      // Regex para extrair o nome do arquivo entre aspas ou sem aspas
       const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/);
       if (match) {
         fileName = decodeURIComponent(match[1] || match[2]);
@@ -111,5 +112,3 @@ export async function fixFiles(id: number, isPinned: boolean) {
 
   return await response.json();
 }
-
-

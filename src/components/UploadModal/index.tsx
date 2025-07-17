@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { uploadFile } from "@/utils/api"
 import { motion } from "framer-motion"
 
-export default function Modal() {
+export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => void }) {
     const { isOpen, closeModal } = useModal()
     const [show, setShow] = useState(false)
     // Captura dos dados
@@ -43,11 +43,15 @@ export default function Modal() {
     try {
       await uploadFile({ nome, descricao, categoria, lotacao, conteudo: base64, originalFileName, mimeType, isPinned })
       setSuccess(true)
+      // Aguarda 800ms antes de atualizar a lista para garantir que o backend já processou
+      setTimeout(() => {
+        if (onUploadSuccess) onUploadSuccess();
+      }, 2000);
       setTimeout(() => {
         closeModal()
         setSuccess(false)
         resetForm()
-      }, 2000)
+      }, 1000)
     } catch (err: any) {
         setMensagem(`Erro: ${err.message}`)
     }

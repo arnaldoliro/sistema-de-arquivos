@@ -1,6 +1,7 @@
 "use client"
 import { useEffect, useRef, useState } from "react"
 import FilesCard from "../FilesCard"
+import UploadModal from "../UploadModal"
 import { getFiles } from "@/utils/api"
 import Filters from "@/types/filters"
 import Spinner from "../Spinner"
@@ -16,13 +17,18 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
   const observerRef = useRef(null)
   const initialLoadRef = useRef(true)
 
+  // Função para resetar lista de arquivos (usada em filtros e upload)
+  const resetFilesList = () => {
+    setPage(1);
+    setFiles([]);
+    setHasMore(true);
+    initialLoadRef.current = true;
+  };
+
   // Resetar quando os filtros mudam
   useEffect(() => {
-    setPage(1)
-    setFiles([])
-    setHasMore(true)
-    initialLoadRef.current = true
-  }, [filters])
+    resetFilesList();
+  }, [filters]);
 
  useEffect(() => {
   if (!hasMore) return
@@ -65,7 +71,7 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
 
     // Garante que o loading dura no mínimo 1 segundo
     const elapsed = Date.now() - startTime
-    const MIN_LOADING_TIME = 2000
+    const MIN_LOADING_TIME = 1000
     if (elapsed < MIN_LOADING_TIME) {
       await new Promise((res) => setTimeout(res, MIN_LOADING_TIME - elapsed))
     }
@@ -104,6 +110,8 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
 
   return (
     <div>
+      {/* Modal de upload integrado para atualizar lista ao enviar */}
+      <UploadModal onUploadSuccess={resetFilesList} />
       {error && (
         <div className="mb-4 p-4 rounded-xl bg-red-100 text-red-700 font-medium shadow">
           Erro ao buscar arquivos: {error}
