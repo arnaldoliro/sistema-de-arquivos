@@ -2,7 +2,7 @@
 import { useModal } from "@/context/ModalContext"
 import { useEffect, useState } from "react"
 import { uploadFile } from "@/utils/api"
-import { motion } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import getAcceptByCategory from "@/utils/categoryModalFilter"
 
 export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => void }) {
@@ -68,7 +68,7 @@ export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => voi
         setTimeout(() => {
             setError(false)
             resetForm()
-        }, 2000)
+        }, 3500)
 
     }
   }
@@ -201,11 +201,25 @@ export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => voi
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
-                    <input className="cursor-pointer" type="checkbox" checked={isPinned} onChange={(e) => setIsPinned(e.target.checked)}/>
-                    <label>Fixar Arquivo</label>
+                    <div className="relative">
+                        <input id="fixar-arquivo" type="checkbox" checked={isPinned} onChange={(e) => setIsPinned(e.target.checked)} className="mt-2 peer appearance-none w-4 h-4 border border-gray-400 rounded-md checked:bg-blue-600 transition duration-200 cursor-pointer"/>
+                        <AnimatePresence>
+                            {isPinned && (
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    exit={{ scale: 0 }}
+                                    className="absolute top-0 left-0 w-4 h-4 flex mt-2 text-center items-center justify-center pointer-events-none"
+                                >
+                                    <i className="fas fa-check text-white text-xs"></i>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                    <label htmlFor="fixar-arquivo" className="cursor-pointer text-gray-800">Fixar Arquivo</label>
                 </div>
                 <div className="flex justify-end">
-                    <button type="button" onClick={closeModal} className="px-4 py-2 text-gray-700 font-medium mr-2 cursor-pointer">Cancelar</button>
+                    <button type="button" onClick={() => {closeModal(); resetForm();}} className="px-4 py-2 text-gray-700 font-medium mr-2 cursor-pointer">Cancelar</button>
                     <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg cursor-pointer duration-300">Enviar</button>
                 </div>
             </form>
