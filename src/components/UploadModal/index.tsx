@@ -3,6 +3,7 @@ import { useModal } from "@/context/ModalContext"
 import { useEffect, useState } from "react"
 import { uploadFile } from "@/utils/api"
 import { motion } from "framer-motion"
+import getAcceptByCategory from "@/utils/categoryModalFilter"
 
 export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => void }) {
     const { isOpen, closeModal } = useModal()
@@ -109,7 +110,7 @@ export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => voi
                 <div>
                     <label className="block text-gray-700 mb-2">Arquivo</label>
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                        <input id="file-upload" type="file" className="hidden"
+                        <input id="file-upload" type="file" className="hidden" accept={getAcceptByCategory(categoria)}
                             onChange={async (e) => {
                                 const file = e.target.files?.[0] || null;
                                 setArquivo(file);
