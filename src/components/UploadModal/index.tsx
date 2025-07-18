@@ -137,7 +137,7 @@ export default function Modal({ onUploadSuccess }: { onUploadSuccess?: () => voi
         
         <div className={`fixed inset-0 bg-[#00000079] items-center flex justify-center z-50 tion-opacity duration-500 ${isOpen ? "bg-black/50 opacity-100" : "opacity-0 pointer-events-none"}`}>
          {!success && (
-          <div className={`bg-white rounded-lg shadow-xl w-full max-w-md p-6 transform transition-all duration-500 ${isOpen ? "scale-85 opacity-100 translate-y-0" : "scale-50 opacity-0 translate-y-4"}`}>
+          <div className={`bg-white rounded-lg shadow-xl w-full max-w-md p-6 transform transition-all duration-500 ${isOpen ? "scale-80 opacity-100 translate-y-0" : "scale-50 opacity-0 translate-y-4"}`}>
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-xl font-bold text-gray-800">Enviar Novo Arquivo</h3>
                 <button onClick={closeModal} className="text-gray-500 hover:text-gray-700 cursor-pointer">
