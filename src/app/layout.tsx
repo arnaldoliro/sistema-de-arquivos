@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ModalProvider } from "@/context/ModalContext"
 import "./globals.css";
 import Header from "@/components/Header";
-import Modal from "@/components/UploadModal";
+// import Modal from "@/components/UploadModal";
 
 export const metadata: Metadata = {
   title: "Sistemas de Arquivos"

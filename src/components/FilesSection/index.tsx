@@ -1,7 +1,7 @@
 "use client"
 import { useEffect, useRef, useState } from "react"
 import FilesCard from "../FilesCard"
-import UploadModal from "../UploadModal"
+// import UploadModal from "../UploadModal"
 import { getFiles } from "@/utils/api"
 import Filters from "@/types/filters"
 import Spinner from "../Spinner"
@@ -14,7 +14,7 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
   const [isLoading, setIsLoading] = useState(false)
   const [hasMore, setHasMore] = useState(true)
 
-  const observerRef = useRef(null)
+  const observerRef = useRef(null) 
   const initialLoadRef = useRef(true)
 
   // Função para resetar lista de arquivos (usada em filtros e upload)
@@ -110,7 +110,7 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
   return (
     <div>
       {/* Modal de upload integrado para atualizar lista ao enviar */}
-      <UploadModal onUploadSuccess={resetFilesList} />
+      {/* <UploadModal onUploadSuccess={resetFilesList} /> */}
       {error && (
         <div className="mb-4 p-4 rounded-xl bg-red-100 text-red-700 font-medium shadow">
           Erro ao buscar arquivos: {error}
