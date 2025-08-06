@@ -36,42 +36,66 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? (() => {
 // }
 
 
-export async function getFiles(filters: Filters & { page: number; limit?: number}) {
+function delay(ms: number, onTick?: (seconds: number) => void) {
+  return new Promise<void>((resolve) => {
+    if (!onTick) return setTimeout(resolve, ms);
 
-  console.log(`${API_URL} => Essa é a URL da API`)
+    let seconds = ms / 1000;
+    const interval = setInterval(() => {
+      seconds--;
+      onTick(seconds);
+      if (seconds <= 0) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 1000);
+  });
+}
 
-  const url = new URL(`${API_URL}/files`)
+export async function getFiles(
+  filters: Filters & { page: number; limit?: number },
+  retries = 5,
+  delayMs = 5000,
+  onCountdownUpdate?: (seconds: number) => void
+): Promise<any> {
+  const url = new URL(`${API_URL}/files`);
 
   if (filters.search?.trim()) {
-    url.searchParams.append("search", filters.search.trim())
+    url.searchParams.append("search", filters.search.trim());
   }
 
-  if (filters.category && filters.category !== "" && filters.category !== "Todas as categorias") {
-    url.searchParams.append("category", filters.category)
+  if (
+    filters.category &&
+    filters.category !== "" &&
+    filters.category !== "Todas as categorias"
+  ) {
+    url.searchParams.append("category", filters.category);
   }
 
   if (filters.date && !isNaN(Date.parse(filters.date))) {
-    url.searchParams.append("date", filters.date)
+    url.searchParams.append("date", filters.date);
   }
-  
-  if (filters.page) {
-    const skip = (filters.page - 1) * (filters.limit || 10)
-    url.searchParams.append("skip", skip.toString())
-  }
-  
-  url.searchParams.append("limit", (filters.limit || 10).toString())
 
-  console.log("[getFiles] URL final:", url.toString())
+  url.searchParams.append("page", filters.page.toString());
+  url.searchParams.append("limit", (filters.limit || 12).toString());
 
   try {
-    const res = await fetch(url.toString())
-    if (!res.ok) throw new Error("contate a equipe de suporte")
-    return await res.json()
+    const res = await fetch(url.toString());
+    if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+    return await res.json();
   } catch (err) {
-    console.error("[getFiles] Erro ao buscar arquivos:", err)
-    throw err
+    console.error(`[getFiles] Erro: ${err}. Tentativas restantes: ${retries}`);
+
+    if (retries > 0) {
+      console.log(`[getFiles] Repetindo em ${delayMs / 1000} segundos...`);
+      await delay(delayMs, onCountdownUpdate);
+      return getFiles(filters, retries - 1, delayMs * 2, onCountdownUpdate);
+    } else {
+      throw new Error("Falha ao buscar arquivos após várias tentativas.");
+    }
   }
 }
+
 
 export async function downloadArquivo(id: number): Promise<void> {
   try {
