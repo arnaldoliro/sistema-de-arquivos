@@ -1,74 +1,105 @@
 import Filters from "@/types/filters"
 
-export async function uploadFile(payload: {
-  nome: string
-  descricao: string
-  categoria: string
-  lotacao: string
-  conteudo: string
-  originalFileName: string
-  mimeType: string
-  isPinned: boolean
-}) {
-  try {
-    const response = await fetch('http://localhost:3000/upload', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? (() => {
+  throw new Error("Variável NEXT_PUBLIC_API_URL não definida!");
+})();
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || 'Erro ao enviar arquivo')
-    }
+// export async function uploadFile(payload: {
+//   nome: string
+//   descricao: string
+//   categoria: string
+//   lotacao: string
+//   conteudo: string
+//   originalFileName: string
+//   mimeType: string
+//   isPinned: boolean
+// }) {
+//   try {
+//     const response = await fetch(`${API_URL}/upload`, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify(payload),
+//     })
 
-    return await response.json()
-  } catch (error: unknown) {
-    console.error('Erro ao enviar arquivo:', error)
-    throw error
-  }
+//     if (!response.ok) {
+//       const errorData = await response.json()
+//       throw new Error(errorData.message || 'Erro ao enviar arquivo')
+//     }
+
+//     return await response.json()
+//   } catch (error: unknown) {
+//     console.error('Erro ao enviar arquivo:', error)
+//     throw error
+//   }
+// }
+
+
+function delay(ms: number, onTick?: (seconds: number) => void) {
+  return new Promise<void>((resolve) => {
+    if (!onTick) return setTimeout(resolve, ms);
+
+    let seconds = ms / 1000;
+    const interval = setInterval(() => {
+      seconds--;
+      onTick(seconds);
+      if (seconds <= 0) {
+        clearInterval(interval);
+        resolve();
+      }
+    }, 1000);
+  });
 }
 
-
-export async function getFiles(filters: Filters & { page: number; limit?: number}) {
-  const url = new URL("http://localhost:3000/files")
+export async function getFiles(
+  filters: Filters & { page: number; limit?: number },
+  retries = 5,
+  delayMs = 5000,
+  onCountdownUpdate?: (seconds: number) => void
+): Promise<any> {
+  const url = new URL(`${API_URL}/files`);
 
   if (filters.search?.trim()) {
-    url.searchParams.append("search", filters.search.trim())
+    url.searchParams.append("search", filters.search.trim());
   }
 
-  if (filters.category && filters.category !== "" && filters.category !== "Todas as categorias") {
-    url.searchParams.append("category", filters.category)
+  if (
+    filters.category &&
+    filters.category !== "" &&
+    filters.category !== "Todas as categorias"
+  ) {
+    url.searchParams.append("category", filters.category);
   }
 
   if (filters.date && !isNaN(Date.parse(filters.date))) {
-    url.searchParams.append("date", filters.date)
+    url.searchParams.append("date", filters.date);
   }
-  
-  if (filters.page) {
-    const skip = (filters.page - 1) * (filters.limit || 10)
-    url.searchParams.append("skip", skip.toString())
-  }
-  
-  url.searchParams.append("limit", (filters.limit || 10).toString())
 
-  console.log("[getFiles] URL final:", url.toString())
+  url.searchParams.append("page", filters.page.toString());
+  url.searchParams.append("limit", (filters.limit || 12).toString());
 
   try {
-    const res = await fetch(url.toString())
-    if (!res.ok) throw new Error("Erro ao buscar arquivos")
-    return await res.json()
+    const res = await fetch(url.toString());
+    if (!res.ok) throw new Error(`Erro HTTP ${res.status}`);
+    return await res.json();
   } catch (err) {
-    console.error("[getFiles] Erro ao buscar arquivos:", err)
-    throw err
+    console.error(`[getFiles] Erro: ${err}. Tentativas restantes: ${retries}`);
+
+    if (retries > 0) {
+      console.log(`[getFiles] Repetindo em ${delayMs / 1000} segundos...`);
+      await delay(delayMs, onCountdownUpdate);
+      return getFiles(filters, retries - 1, delayMs * 2, onCountdownUpdate);
+    } else {
+      throw new Error("Falha ao buscar arquivos após várias tentativas.");
+    }
   }
 }
 
+
 export async function downloadArquivo(id: number): Promise<void> {
   try {
-    const response = await fetch(`http://localhost:3000/files/${id}/download`);
+    const response = await fetch(`${API_URL}/files/${id}/download`);
 
     if (!response.ok) {
       throw new Error('Erro ao baixar o arquivo');
@@ -102,19 +133,19 @@ export async function downloadArquivo(id: number): Promise<void> {
   }
 }
 
-export async function fixFiles(id: number, isPinned: boolean) {
-  const response = await fetch(`http://localhost:3000/files/${id}/fix`, {
-    method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ isPinned }),
-  });
+// export async function fixFiles(id: number, isPinned: boolean) {
+//   const response = await fetch(`${API_URL}/files/${id}/fix`, {
+//     method: 'PATCH',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify({ isPinned }),
+//   });
 
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || 'Erro ao fixar');
-  }
+//   if (!response.ok) {
+//     const error = await response.json();
+//     throw new Error(error.message || 'Erro ao fixar');
+//   }
 
-  return await response.json();
-}
+//   return await response.json();
+// }
