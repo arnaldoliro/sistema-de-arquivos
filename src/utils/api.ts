@@ -4,38 +4,6 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL ?? (() => {
   throw new Error("Variável NEXT_PUBLIC_API_URL não definida!");
 })();
 
-// export async function uploadFile(payload: {
-//   nome: string
-//   descricao: string
-//   categoria: string
-//   lotacao: string
-//   conteudo: string
-//   originalFileName: string
-//   mimeType: string
-//   isPinned: boolean
-// }) {
-//   try {
-//     const response = await fetch(`${API_URL}/upload`, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify(payload),
-//     })
-
-//     if (!response.ok) {
-//       const errorData = await response.json()
-//       throw new Error(errorData.message || 'Erro ao enviar arquivo')
-//     }
-
-//     return await response.json()
-//   } catch (error: unknown) {
-//     console.error('Erro ao enviar arquivo:', error)
-//     throw error
-//   }
-// }
-
-
 function delay(ms: number, onTick?: (seconds: number) => void) {
   return new Promise<void>((resolve) => {
     if (!onTick) return setTimeout(resolve, ms);
@@ -87,7 +55,6 @@ export async function getFiles(
     console.error(`[getFiles] Erro: ${err}. Tentativas restantes: ${retries}`);
 
     if (retries > 0) {
-      console.log(`[getFiles] Repetindo em ${delayMs / 1000} segundos...`);
       await delay(delayMs, onCountdownUpdate);
       return getFiles(filters, retries - 1, delayMs * 2, onCountdownUpdate);
     } else {
@@ -109,16 +76,12 @@ export async function downloadArquivo(id: number): Promise<void> {
     const disposition = response.headers.get('Content-Disposition');
     let fileName = 'arquivo';
 
-    console.log('Headers:', [...response.headers.entries()]);
-
     if (disposition) {
       const match = disposition.match(/filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/);
       if (match) {
         fileName = decodeURIComponent(match[1] || match[2]);
       }
     }
-
-    console.log(fileName)
 
     const blob = await response.blob();
 
@@ -132,20 +95,3 @@ export async function downloadArquivo(id: number): Promise<void> {
     console.error('Erro ao baixar arquivo:', error);
   }
 }
-
-// export async function fixFiles(id: number, isPinned: boolean) {
-//   const response = await fetch(`${API_URL}/files/${id}/fix`, {
-//     method: 'PATCH',
-//     headers: {
-//       'Content-Type': 'application/json',
-//     },
-//     body: JSON.stringify({ isPinned }),
-//   });
-
-//   if (!response.ok) {
-//     const error = await response.json();
-//     throw new Error(error.message || 'Erro ao fixar');
-//   }
-
-//   return await response.json();
-// }

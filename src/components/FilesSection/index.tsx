@@ -39,9 +39,9 @@ export default function SectionFiles({ filters }: { filters: Filters }) {
       try {
         const data = await getFiles(
           { ...filters, page },
-          5,       // retries
-          5000,    // initial delay
-          (seconds) => setRetryCountdown(seconds) // callback para UI
+          5,
+          5000,
+          (seconds) => setRetryCountdown(seconds)
         )
 
         const formatted: FileItem[] = data.map((file: any) => ({

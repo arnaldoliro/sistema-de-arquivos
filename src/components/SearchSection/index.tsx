@@ -13,7 +13,6 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
   const [category, setCategory] = useState("Todas as categorias")
   const [date, setDate] = useState("")
 
-  // Chamar onSearch só quando algum filtro mudar
   useEffect(() => {
     onSearch({
       search: search.trim() || undefined,
@@ -34,8 +33,8 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         <div className="flex-grow">
           <SearchInput
             value={search}
-            onChange={setSearch}  // atualiza o estado aqui
-            onDebouncedSearch={setSearch}  // passa o valor debounced pra setSearch (atualiza estado)
+            onChange={setSearch}  
+            onDebouncedSearch={setSearch}
           />
         </div>
         <div className="flex gap-4 items-center">

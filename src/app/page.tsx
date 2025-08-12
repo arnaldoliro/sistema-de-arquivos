@@ -8,10 +8,6 @@ import Filters from "@/types/filters"
 export default function Home() {
   const [filters, setFilters] = useState<Filters>({})
 
-  useEffect(() => {
-    console.log("[HOME] Filtros atualizados:", filters)
-  }, [filters])
-
   return (
     <div>
       <SearchBar onSearch={setFilters} />

@@ -12,7 +12,6 @@ export default function SearchInput({
 }) {
   useEffect(() => {
   const timeout = setTimeout(() => {
-    console.log("[SearchInput] Enviando busca:", value)
     onDebouncedSearch(value)
   }, 600)
 

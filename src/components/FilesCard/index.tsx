@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import Dropdown from "../FilesDropdown"
 import { downloadArquivo } from '@/utils/api';
 
-export default function FilesCard({ file, onTogglePin }: any) {
+export default function FilesCard({ file }: any) {
   const [open, setOpen] = useState(false)
   const [visible, setVisible] = useState(false)
   const ref = useRef<HTMLDivElement>(null)  
@@ -12,11 +12,6 @@ export default function FilesCard({ file, onTogglePin }: any) {
     downloadArquivo(file.id);
     setOpen(false)
   };
-
-  const handleTogglePin = () => {
-    onTogglePin();
-    setOpen(false);
-  }
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -82,7 +77,6 @@ export default function FilesCard({ file, onTogglePin }: any) {
           {visible && (
             <Dropdown
               isPinned={file.isPinned}
-              onTogglePin={handleTogglePin}
               onDownload={handleDownload}
               open={open}
               fileId={file.id}
