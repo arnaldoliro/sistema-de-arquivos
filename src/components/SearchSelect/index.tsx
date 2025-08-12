@@ -38,7 +38,7 @@ export default function SearchSelect({
     <div ref={ref} className="relative w-64">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full border border-gray-300 rounded-2xl px-4 py-2 bg-white text-left focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full border border-gray-300 rounded-2xl text-sm md:text-md text-center py-1 px-5 md:py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 cursor-pointer"
       >
         {selectedLabel}
       </button>
@@ -48,7 +48,7 @@ export default function SearchSelect({
           {options.map((option) => (
             <li
               key={option.value}
-              className="px-4 py-2 hover:bg-blue-100 cursor-pointer text-sm"
+              className={`px-1 py-2 text-center border-b-1 border-[#eee] sm:border-0 hover:bg-blue-100 cursor-pointer text-sm ${(option.value === 'Outros') ? "border-b-1" : "border-0"}`}
               onClick={() => {
                 onSelect(option.value)
                 setOpen(false)

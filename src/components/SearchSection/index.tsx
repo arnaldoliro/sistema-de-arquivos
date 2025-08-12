@@ -43,11 +43,11 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             type="date"
             value={date}
             onChange={(e) => setDate(e.target.value)}
-            className="border border-gray-300 rounded-2xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border transition-all duration-300 border-gray-300 rounded-2xl px-3 py-1 md:px-4 md:py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <button
             onClick={clearFilters}
-            className="text-blue-600 hover:text-blue-800 font-medium cursor-pointer"
+            className="text-blue-600 hover:text-blue-800 font-medium cursor-pointer md:text-md text-sm"
           >
             Limpar filtros
           </button>
